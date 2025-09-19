@@ -1,6 +1,6 @@
-# report_generator.py (Versão 2.3 - Correção do import 'time')
+# report_generator.py (Versão 2.4 - Nomes customizados na tabela)
 
-import time # LINHA ADICIONADA
+import time
 from fpdf import FPDF
 from datetime import datetime
 import io
@@ -113,7 +113,9 @@ class PDFReport(FPDF):
                         self.cell(60, 7, 'Material', 1, 1, 'C')
                         self.set_font('Arial', '', 9)
 
-                    self.cell(80, 7, f'  - Trecho {i+1}', 1, 0, 'L')
+                    # --- ALTERAÇÃO 1: Usa o nome customizado do trecho ---
+                    nome_trecho = trecho.get('nome', f'Trecho {i+1}')
+                    self.cell(80, 7, f'  - {nome_trecho}', 1, 0, 'L')
                     self.cell(25, 7, f"{trecho['comprimento']:.2f}", 1, 0, 'C')
                     self.cell(25, 7, f"{trecho['diametro']:.2f}", 1, 0, 'C')
                     self.cell(60, 7, trecho['material'], 1, 1, 'L')
@@ -121,28 +123,30 @@ class PDFReport(FPDF):
         draw_rows('Trechos em Série (Antes)', network_data.get('antes', []))
         
         if network_data.get('paralelo'):
-             if self.get_y() + 15 > self.page_break_trigger:
-                 self.add_page()
-                 self.add_section_title("Resumo da Rede - Ramais em Paralelo (Continuação)")
-             self.set_font('', 'B')
-             self.cell(0, 7, 'Ramais em Paralelo', 1, 1, 'L')
-             self.set_font('', '')
-             for ramal_name, trechos_ramal in network_data['paralelo'].items():
-                 for i, trecho in enumerate(trechos_ramal):
-                    if self.get_y() + 7 > self.page_break_trigger:
-                        self.add_page()
-                        self.add_section_title(f"Resumo da Rede - {ramal_name} (Continuação)")
-                        self.set_font('Arial', 'B', 10)
-                        self.cell(80, 7, 'Trecho / Ramal', 1, 0, 'C')
-                        self.cell(25, 7, 'L (m)', 1, 0, 'C')
-                        self.cell(25, 7, 'Ø (mm)', 1, 0, 'C')
-                        self.cell(60, 7, 'Material', 1, 1, 'C')
-                        self.set_font('Arial', '', 9)
-
-                    self.cell(80, 7, f'  - {ramal_name} (T{i+1})', 1, 0, 'L')
-                    self.cell(25, 7, f"{trecho['comprimento']:.2f}", 1, 0, 'C')
-                    self.cell(25, 7, f"{trecho['diametro']:.2f}", 1, 0, 'C')
-                    self.cell(60, 7, trecho['material'], 1, 1, 'L')
+                 if self.get_y() + 15 > self.page_break_trigger:
+                       self.add_page()
+                       self.add_section_title("Resumo da Rede - Ramais em Paralelo (Continuação)")
+                 self.set_font('', 'B')
+                 self.cell(0, 7, 'Ramais em Paralelo', 1, 1, 'L')
+                 self.set_font('', '')
+                 for ramal_name, trechos_ramal in network_data['paralelo'].items():
+                       for i, trecho in enumerate(trechos_ramal):
+                           if self.get_y() + 7 > self.page_break_trigger:
+                               self.add_page()
+                               self.add_section_title(f"Resumo da Rede - {ramal_name} (Continuação)")
+                               self.set_font('Arial', 'B', 10)
+                               self.cell(80, 7, 'Trecho / Ramal', 1, 0, 'C')
+                               self.cell(25, 7, 'L (m)', 1, 0, 'C')
+                               self.cell(25, 7, 'Ø (mm)', 1, 0, 'C')
+                               self.cell(60, 7, 'Material', 1, 1, 'C')
+                               self.set_font('Arial', '', 9)
+                           
+                           # --- ALTERAÇÃO 2: Usa o nome customizado do trecho no ramal ---
+                           nome_trecho_ramal = trecho.get('nome', f'{ramal_name} (T{i+1})')
+                           self.cell(80, 7, f'  - {nome_trecho_ramal}', 1, 0, 'L')
+                           self.cell(25, 7, f"{trecho['comprimento']:.2f}", 1, 0, 'C')
+                           self.cell(25, 7, f"{trecho['diametro']:.2f}", 1, 0, 'C')
+                           self.cell(60, 7, trecho['material'], 1, 1, 'L')
 
         draw_rows('Trechos em Série (Depois)', network_data.get('depois', []))
         self.ln(5)
@@ -166,9 +170,9 @@ class PDFReport(FPDF):
             self.add_page()
             available_height_new_page = self.page_break_trigger - self.get_y() - 10
             if new_height > available_height_new_page:
-                 scale_factor = available_height_new_page / new_height
-                 new_height *= scale_factor
-                 new_width *= scale_factor
+                  scale_factor = available_height_new_page / new_height
+                  new_height *= scale_factor
+                  new_width *= scale_factor
 
         self.image(temp_img_path, x='C', w=new_width)
         self.ln(5)
